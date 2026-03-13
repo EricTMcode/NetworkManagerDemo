@@ -9,15 +9,15 @@ import Foundation
 
 enum NetworkError: Error {
     case badURL
-    case request(String)
+    case transport(TransportError)
     case httpReponse
     case httpStatusCode(Int)
     case decoding
 
     var userMessage: String {
         switch self {
-        case .request(let message):
-            message
+        case .transport(let transportError):
+            transportError.userMessage
         case .httpStatusCode(let code):
             switch code {
             case 401: "Your session has expired. Please sign in again."
@@ -33,13 +33,13 @@ enum NetworkError: Error {
 }
 
 enum TransportError: Error {
-    case offline, timeOut, dnsFailure, cannotConnect, cancelled, tlsFailure, unknown
+    case offline, timedOut, dnsFailure, cannotConnect, cancelled, tlsFailure, unknown
     init(urlError: URLError) {
         switch urlError.code {
         case .notConnectedToInternet, .networkConnectionLost, .dataNotAllowed:
             self = .offline
         case .timedOut:
-            self = .timeOut
+            self = .timedOut
         case .dnsLookupFailed, .cannotFindHost:
             self = .dnsFailure
         case .cannotConnectToHost:
@@ -57,7 +57,7 @@ enum TransportError: Error {
         switch self {
         case .offline:
             "You appear to be offline. Check your internet connection and try again."
-        case .timeOut:
+        case .timedOut:
             "The request timed out. Try again."
         case .dnsFailure, .cannotConnect:
             "We can't reach the server right now. Please try again later."
@@ -106,10 +106,13 @@ class NetworkManager {
                 print("Data as string: \(String(data: data, encoding: .utf8) ?? "Unable to convert data to string")")
                 throw NetworkError.decoding
             }
-
+        } catch let networkError as NetworkError {
+            throw networkError
+        } catch let urlError as URLError {
+            throw NetworkError.transport(TransportError(urlError: urlError))
         } catch {
             print("Request error \(error.localizedDescription)")
-            throw NetworkError.request(error.localizedDescription)
+            throw NetworkError.transport(.unknown)
         }
     }
 
