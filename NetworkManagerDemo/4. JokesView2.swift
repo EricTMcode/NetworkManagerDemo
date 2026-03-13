@@ -45,7 +45,10 @@ struct JokesView2: View {
             }
         }
         .task {
-            jokes = await manager.fetchAndDecodeJSON(from: TestURL.jokesURL)
+//            jokes = await manager.fetchAndDecodeJSON(from: TestURL.jokesURL)
+            jokes = await manager.fetchAndDecodeJSON(from: TestURL.jokesURL) { decoder in
+                decoder.dateDecodingStrategy = .iso8601
+            }
         }
     }
 }
