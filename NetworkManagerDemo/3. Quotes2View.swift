@@ -25,6 +25,7 @@ struct QuotePlus: Decodable {
 struct Quotes2View: View {
     @State private var quotePlus: QuotePlus? = nil
     let manager = NetworkManager.shared
+    @State private var networkError: NetworkError? = nil
 
     var body: some View {
         Group {
@@ -52,7 +53,13 @@ struct Quotes2View: View {
             }
         }
         .task {
-            quotePlus = try? await manager.fetchAndDecodeJSON(from: TestURL.quotes2URL)
+            do {
+                quotePlus = try? await manager.fetchAndDecodeJSON(from: TestURL.quotes2URL)
+            }  catch let error as NetworkError {
+                networkError = error
+            } catch {
+                print(error.localizedDescription)
+            }
         }
     }
 }

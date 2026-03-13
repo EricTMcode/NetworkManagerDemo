@@ -35,12 +35,13 @@ struct Quote: Decodable, Identifiable {
 import SwiftUI
 
 struct QuotesView: View {
-    @State private var quotes: [Quote]? = nil
+    @State private var quotes: [Quote] = []
     let manager = NetworkManager.shared
+    @State private var networkError: NetworkError? = nil
 
     var body: some View {
         Group {
-            if let quotes {
+            if !quotes.isEmpty {
                 List(quotes.shuffled()) { quote in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(quote.text)
@@ -64,7 +65,13 @@ struct QuotesView: View {
         }
         .task {
 //            quotes = await fetchAndDecodeQuotes(from: TestURL.quotesURLBadJSON)
-            quotes = try? await manager.fetchAndDecodeJSON(from: TestURL.quotesURL)
+            do {
+                quotes = try await manager.fetchAndDecodeJSON(from: TestURL.quotesURL)
+            } catch let error as NetworkError {
+                networkError = error
+            } catch {
+                print(error.localizedDescription)
+            }
         }
     }
 
