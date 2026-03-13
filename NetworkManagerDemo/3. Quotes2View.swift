@@ -61,6 +61,19 @@ struct Quotes2View: View {
                 print(error.localizedDescription)
             }
         }
+        .alert(
+            "Unable to load quotes",
+            isPresented: Binding(get: {
+                networkError != nil
+            }, set: { value in
+                if !value { networkError = nil }
+            }),
+            presenting: networkError) { _ in
+                Button("OK") { }
+            } message: { networkError in
+                Text(networkError.userMessage)
+            }
+
     }
 }
 

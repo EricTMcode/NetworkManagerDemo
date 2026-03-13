@@ -17,7 +17,7 @@ enum TestURL {
     static let quotesURL = "https://stewartlynch.github.io/Samples/quotes.json"
     static let quotesURLRequestError = "https://invalid.stewartlynch.github.io/Samples/quotes.json"
     static let quotesURLResponseError = "data:text/plain,hello"
-    static let quotesURLStatusError = "https://httpbin.org/status/500"
+    static let quotesURLStatusError = "https://httpbin.org/status/403"
     static let quotesURLBadJSON = "https://stewartlynch.github.io/Samples/errorQuotes.json"
 
     static let jokesURL = "https://stewartlynch.github.io/Samples/jokes.json"
@@ -75,11 +75,13 @@ struct QuotesView: View {
         }
         .alert(
             "Unable to load quotes",
-            isPresented: .constant(networkError != nil),
+            isPresented: Binding(get: {
+                networkError != nil
+            }, set: { value in
+                if !value { networkError = nil }
+            }),
             presenting: networkError) { _ in
-                Button("OK") {
-                    networkError = nil
-                }
+                Button("OK") { }
             } message: { networkError in
                 Text(networkError.userMessage)
             }
