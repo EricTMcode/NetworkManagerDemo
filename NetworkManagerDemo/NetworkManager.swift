@@ -7,15 +7,41 @@
 
 import Foundation
 
+enum NetworkError: Error {
+    case badURL
+    case request(String)
+    case httpReponse
+    case httpStatusCode(Int)
+    case decoding
+
+    var userMessage: String {
+        switch self {
+        case .request(let message):
+            message
+        case .httpStatusCode(let code):
+            switch code {
+            case 401: "Your session has expired. Please sign in again."
+            case 403: "You don't have permission to do that."
+            case 404: "We couldn't find what you were looking for."
+            case 429: "Too many requests. Please try again later."
+            case 500...599: "The server is having trouble, please try again later."
+            default: "Something went wrong. Please try again later."
+            }
+        default: "Something went wrong. Please try again later."
+        }
+    }
+}
+
 class NetworkManager {
     static let shared = NetworkManager()
     private init() { }
 
-    func fetchAndDecodeJSON<T: Decodable>(from url: String, configureDecoder: ((JSONDecoder) -> ())? = nil) async -> T? {
+    func fetchAndDecodeJSON<T: Decodable>(from url: String, configureDecoder: ((JSONDecoder) -> ())? = nil) async throws(NetworkError) -> T {
         guard let url = URL(string: url) else {
             print("Invalid URL")
             return nil
         }
+
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
 
