@@ -64,7 +64,7 @@ struct QuotesView: View {
             }
         }
         .task {
-//            quotes = await fetchAndDecodeQuotes(from: TestURL.quotesURLBadJSON)
+            //            quotes = await fetchAndDecodeQuotes(from: TestURL.quotesURLBadJSON)
             do {
                 quotes = try await manager.fetchAndDecodeJSON(from: TestURL.quotesURL)
             } catch let error as NetworkError {
@@ -73,9 +73,17 @@ struct QuotesView: View {
                 print(error.localizedDescription)
             }
         }
+        .alert(
+            "Unable to load quotes",
+            isPresented: .constant(networkError != nil),
+            presenting: networkError) { _ in
+                Button("OK") {
+                    networkError = nil
+                }
+            } message: { networkError in
+                Text(networkError.userMessage)
+            }
     }
-
-    
 }
 
 #Preview {
