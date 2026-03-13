@@ -39,7 +39,7 @@ class NetworkManager {
     func fetchAndDecodeJSON<T: Decodable>(from url: String, configureDecoder: ((JSONDecoder) -> ())? = nil) async throws(NetworkError) -> T {
         guard let url = URL(string: url) else {
             print("Invalid URL")
-            return nil
+            throw NetworkError.badURL
         }
 
         do {
@@ -47,12 +47,12 @@ class NetworkManager {
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 print("Network error: Response was not HTTPURLResponse")
-                return nil
+                throw NetworkError.httpReponse
             }
 
             guard (200...299).contains(httpResponse.statusCode) else {
                 print("HTTP error: status code \(httpResponse.statusCode)")
-                return nil
+                throw NetworkError.httpStatusCode(httpResponse.statusCode)
             }
 
             do {
@@ -61,16 +61,16 @@ class NetworkManager {
                 return try decoder.decode(T.self, from: data)
             } catch let error as DecodingError {
                 print(decodingError(error: error))
-                return nil
+                throw NetworkError.decoding
             } catch {
                 print("Decoding error: \(error.localizedDescription)")
                 print("Data as string: \(String(data: data, encoding: .utf8) ?? "Unable to convert data to string")")
-                return nil
+                throw NetworkError.decoding
             }
 
         } catch {
             print("Request error \(error.localizedDescription)")
-            return nil
+            throw NetworkError.request(error.localizedDescription)
         }
     }
 
