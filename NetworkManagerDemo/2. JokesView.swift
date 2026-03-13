@@ -23,12 +23,11 @@ struct Joke:Identifiable, Codable {
 }
 
 struct JokesView: View {
-    @State private var viewModel = DataViewModel<Joke>(urlString: TestURL.jokesURL)
+    @State private var viewModel = DataViewModel<[Joke]>(urlString: TestURL.jokesURL)
 
     var body: some View {
-        let jokes = viewModel.data
         Group {
-            if !jokes.isEmpty {
+            if let jokes = viewModel.data, !jokes.isEmpty {
                 List(jokes.shuffled()) { joke in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(joke.setup)

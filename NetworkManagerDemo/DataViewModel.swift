@@ -9,7 +9,7 @@ import SwiftUI
 
 @Observable
 class DataViewModel<T: Decodable> {
-    var data: [T] = []
+    var data: T?
     private let manager = NetworkManager.shared
     var networkError: NetworkError? = nil
     var isLoading = false

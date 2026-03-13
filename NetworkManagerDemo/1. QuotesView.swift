@@ -35,12 +35,11 @@ struct Quote: Decodable, Identifiable {
 import SwiftUI
 
 struct QuotesView: View {
-    @State private var viewModel = DataViewModel<Quote>(urlString: TestURL.quotesURL)
+    @State private var viewModel = DataViewModel<[Quote]>(urlString: TestURL.quotesURL)
 
     var body: some View {
-        let quotes = viewModel.data
         Group {
-            if !quotes.isEmpty {
+            if let quotes = viewModel.data, !quotes.isEmpty {
                 List(quotes.shuffled()) { quote in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(quote.text)
