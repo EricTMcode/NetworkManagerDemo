@@ -52,6 +52,23 @@ enum TransportError: Error {
             self = .unknown
         }
     }
+
+    var userMessage: String {
+        switch self {
+        case .offline:
+            "You appear to be offline. Check your internet connection and try again."
+        case .timeOut:
+            "The request timed out. Try again."
+        case .dnsFailure, .cannotConnect:
+            "We can't reach the server right now. Please try again later."
+        case .cancelled:
+            "The request was cancelled."
+        case .tlsFailure:
+            "A secure connection could not be established."
+        case .unknown:
+            "A network error occured. Please try again later."
+        }
+    }
 }
 
 class NetworkManager {
