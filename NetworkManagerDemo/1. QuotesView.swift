@@ -64,7 +64,7 @@ struct QuotesView: View {
         }
         .task {
 //            quotes = await fetchAndDecodeQuotes(from: TestURL.quotesURLBadJSON)
-            quotes = await manager.fetchAndDecodeJSON(from: TestURL.quotesURL)
+            quotes = try? await manager.fetchAndDecodeJSON(from: TestURL.quotesURL)
         }
     }
 

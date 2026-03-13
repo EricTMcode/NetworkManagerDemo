@@ -52,7 +52,7 @@ struct Quotes2View: View {
             }
         }
         .task {
-            quotePlus = await manager.fetchAndDecodeJSON(from: TestURL.quotes2URL)
+            quotePlus = try? await manager.fetchAndDecodeJSON(from: TestURL.quotes2URL)
         }
     }
 }

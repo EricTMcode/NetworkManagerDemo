@@ -43,7 +43,7 @@ struct JokesView: View {
             }
         }
         .task {
-            jokes = await manager.fetchAndDecodeJSON(from: TestURL.jokesURL)
+            jokes = try? await manager.fetchAndDecodeJSON(from: TestURL.jokesURL)
         }
     }
 }

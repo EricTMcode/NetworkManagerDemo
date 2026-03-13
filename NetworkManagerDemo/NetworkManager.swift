@@ -32,6 +32,28 @@ enum NetworkError: Error {
     }
 }
 
+enum TransportError: Error {
+    case offline, timeOut, dnsFailure, cannotConnect, cancelled, tlsFailure, unknown
+    init(urlError: URLError) {
+        switch urlError.code {
+        case .notConnectedToInternet, .networkConnectionLost, .dataNotAllowed:
+            self = .offline
+        case .timedOut:
+            self = .timeOut
+        case .dnsLookupFailed, .cannotFindHost:
+            self = .dnsFailure
+        case .cannotConnectToHost:
+            self = .cannotConnect
+        case .cancelled:
+            self = .cancelled
+        case .secureConnectionFailed, .serverCertificateHasBadDate, .serverCertificateUntrusted, .serverCertificateHasUnknownRoot, .serverCertificateNotYetValid:
+            self = .tlsFailure
+        default:
+            self = .unknown
+        }
+    }
+}
+
 class NetworkManager {
     static let shared = NetworkManager()
     private init() { }
