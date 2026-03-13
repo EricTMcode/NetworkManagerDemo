@@ -35,14 +35,12 @@ struct Quote: Decodable, Identifiable {
 import SwiftUI
 
 struct QuotesView: View {
-    @State private var quotes: [Quote] = []
-    let manager = NetworkManager.shared
-    @State private var networkError: NetworkError? = nil
+    @State private var viewModel = DataViewModel()
 
     var body: some View {
         Group {
-            if !quotes.isEmpty {
-                List(quotes.shuffled()) { quote in
+            if !viewModel.quotes.isEmpty {
+                List(viewModel.quotes.shuffled()) { quote in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(quote.text)
                             .font(.headline)
@@ -64,23 +62,17 @@ struct QuotesView: View {
             }
         }
         .task {
-            //            quotes = await fetchAndDecodeQuotes(from: TestURL.quotesURLBadJSON)
-            do {
-                quotes = try await manager.fetchAndDecodeJSON(from: TestURL.quotesURL)
-            } catch let error as NetworkError {
-                networkError = error
-            } catch {
-                print(error.localizedDescription)
-            }
+            await viewModel.fetchData()
+
         }
         .alert(
             "Unable to load quotes",
             isPresented: Binding(get: {
-                networkError != nil
+                viewModel.networkError != nil
             }, set: { value in
-                if !value { networkError = nil }
+                if !value { viewModel.networkError = nil }
             }),
-            presenting: networkError) { _ in
+            presenting: viewModel.networkError) { _ in
                 Button("OK") { }
             } message: { networkError in
                 Text(networkError.userMessage)
@@ -93,5 +85,20 @@ struct QuotesView: View {
         QuotesView()
             .navigationTitle(ViewOption.first.title)
             .toolbarTitleDisplayMode(.inlineLarge)
+    }
+}
+
+@Observable
+class DataViewModel {
+    var quotes: [Quote] = []
+    private let manager = NetworkManager.shared
+    var networkError: NetworkError? = nil
+
+    func fetchData() async {
+        do {
+            quotes = try await manager.fetchAndDecodeJSON(from: TestURL.quotesURL)
+        } catch let error {
+            networkError = error
+        }
     }
 }
