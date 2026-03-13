@@ -14,9 +14,11 @@ class DataViewModel<T: Decodable> {
     var networkError: NetworkError? = nil
     var isLoading = false
     let urlString: String
+    private let configurator: ((JSONDecoder) -> Void)?
 
-    init(urlString: String) {
+    init(urlString: String, configurator: ((JSONDecoder) -> Void)? = nil) {
         self.urlString = urlString
+        self.configurator = configurator
     }
 
     func fetchData() async {
@@ -30,7 +32,11 @@ class DataViewModel<T: Decodable> {
         #endif
         
         do {
-            data = try await manager.fetchAndDecodeJSON(from: urlString)
+            if let configurator {
+                data = try await manager.fetchAndDecodeJSON(from: urlString, configureDecoder: configurator)
+            } else {
+                data = try await manager.fetchAndDecodeJSON(from: urlString)
+            }
         } catch let error {
             networkError = error
         }
