@@ -17,13 +17,15 @@
 
 import SwiftUI
 
-struct QuotePlus {
+struct QuotePlus: Decodable {
     let lastUpdated: Date
     let quotes: [Quote]
 }
 
 struct Quotes2View: View {
     @State private var quotePlus: QuotePlus? = nil
+    let manager = NetworkManager.shared
+
     var body: some View {
         Group {
             if let quotePlus {
@@ -48,6 +50,9 @@ struct Quotes2View: View {
             } else {
                 ContentUnavailableView("No Quotes available", systemImage: "quote.closing")
             }
+        }
+        .task {
+            quotePlus = await manager.fetchAndDecodeJSON(from: TestURL.quotes2URL)
         }
     }
 }

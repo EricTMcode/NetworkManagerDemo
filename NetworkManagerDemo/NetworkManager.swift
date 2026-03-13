@@ -11,7 +11,7 @@ class NetworkManager {
     static let shared = NetworkManager()
     private init() { }
 
-    func fetchAndDecodeJSON<T: Decodable>(from url: String) async -> T? {
+    func fetchAndDecodeJSON<T: Decodable>(from url: String, configureDecoder: ((JSONDecoder) -> ())? = nil) async -> T? {
         guard let url = URL(string: url) else {
             print("Invalid URL")
             return nil
@@ -31,6 +31,7 @@ class NetworkManager {
 
             do {
                 let decoder = JSONDecoder()
+                configureDecoder?(decoder)
                 return try decoder.decode(T.self, from: data)
             } catch let error as DecodingError {
                 print(decodingError(error: error))
