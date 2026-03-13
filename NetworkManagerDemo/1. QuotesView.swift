@@ -39,32 +39,29 @@ struct QuotesView: View {
 
     var body: some View {
         Group {
-            if viewModel.isLoading {
-                ProgressView("Loading quotes")
-            } else {
-                if !viewModel.quotes.isEmpty {
-                    List(viewModel.quotes.shuffled()) { quote in
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(quote.text)
-                                .font(.headline)
-                            HStack {
-                                Text(quote.author)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Text(quote.entryDate, format: .dateTime.month().day().year())
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
-                            }
+            if !viewModel.quotes.isEmpty {
+                List(viewModel.quotes.shuffled()) { quote in
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(quote.text)
+                            .font(.headline)
+                        HStack {
+                            Text(quote.author)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(quote.entryDate, format: .dateTime.month().day().year())
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
                         }
-                        .padding(.vertical, 4)
                     }
-                    .listStyle(.plain)
-                } else {
-                    ContentUnavailableView("No Quotes available", systemImage: "quote.closing")
+                    .padding(.vertical, 4)
                 }
+                .listStyle(.plain)
+            } else {
+                ContentUnavailableView("No Quotes available", systemImage: "quote.closing")
             }
         }
+        .withLoader(isLoading: viewModel.isLoading, title: "quotes")
         .task {
             await viewModel.fetchData()
 
@@ -108,5 +105,24 @@ class DataViewModel {
         } catch let error {
             networkError = error
         }
+    }
+}
+
+struct Loader: ViewModifier {
+    let isLoading: Bool
+    let title: String
+
+    func body(content: Content) -> some View {
+        if isLoading {
+            ProgressView("Loading \(title)")
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    func withLoader(isLoading: Bool, title: String) -> some View {
+        modifier(Loader(isLoading: isLoading, title: title))
     }
 }
