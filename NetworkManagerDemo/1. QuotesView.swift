@@ -57,6 +57,7 @@ struct QuotesView: View {
                     .padding(.vertical, 4)
                 }
                 .listStyle(.plain)
+                .refreshable { Task { await viewModel.fetchData() } }
             } else {
                 ContentUnavailableView("No Quotes available", systemImage: "quote.closing")
             }
