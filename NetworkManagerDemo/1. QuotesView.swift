@@ -39,26 +39,30 @@ struct QuotesView: View {
 
     var body: some View {
         Group {
-            if !viewModel.quotes.isEmpty {
-                List(viewModel.quotes.shuffled()) { quote in
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(quote.text)
-                            .font(.headline)
-                        HStack {
-                            Text(quote.author)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Text(quote.entryDate, format: .dateTime.month().day().year())
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                .listStyle(.plain)
+            if viewModel.isLoading {
+                ProgressView("Loading quotes")
             } else {
-                ContentUnavailableView("No Quotes available", systemImage: "quote.closing")
+                if !viewModel.quotes.isEmpty {
+                    List(viewModel.quotes.shuffled()) { quote in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(quote.text)
+                                .font(.headline)
+                            HStack {
+                                Text(quote.author)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text(quote.entryDate, format: .dateTime.month().day().year())
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .listStyle(.plain)
+                } else {
+                    ContentUnavailableView("No Quotes available", systemImage: "quote.closing")
+                }
             }
         }
         .task {
@@ -93,8 +97,12 @@ class DataViewModel {
     var quotes: [Quote] = []
     private let manager = NetworkManager.shared
     var networkError: NetworkError? = nil
+    var isLoading = false
 
     func fetchData() async {
+        isLoading = true
+        defer { isLoading = false }
+        try? await Task.sleep(for: .seconds(2))
         do {
             quotes = try await manager.fetchAndDecodeJSON(from: TestURL.quotesURL)
         } catch let error {
